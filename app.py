@@ -68,6 +68,10 @@ def index():
 @app.route('/plot.png')
 def plot_png():
     global last_data
+    import matplotlib.pyplot as plt
+    from scipy.stats import probplot
+    import io
+
     fig, axs = plt.subplots(1, 2, figsize=(10, 4))
 
     # ヒストグラム
@@ -86,3 +90,4 @@ def plot_png():
     plt.close()
     buf.seek(0)
     return send_file(buf, mimetype='image/png')
+
