@@ -2,19 +2,37 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>正規性検定ツール</title>
+  <title>正規性検定</title>
+  <style>
+    textarea { width: 80%; height: 100px; }
+    table.result-table {
+      border-collapse: collapse;
+      width: 80%;
+      margin-top: 20px;
+    }
+    table.result-table td, table.result-table th {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    table.result-table tr:nth-child(1) td:nth-child(2) {
+      background-color: #f88;  /* P-value row highlight */
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-  <h1>数値データ 正規性検定ツール</h1>
+  <h1>Shapiro-Wilk 正規性検定</h1>
   <form method="POST">
-    <p>数値をカンマ区切りまたはスペース区切りで貼り付けてください:</p>
-    <textarea name="data" rows="5" cols="50" placeholder="12.1, 13.5, 14.2, 13.0"></textarea><br><br>
+    <label>数値をカンマまたはスペース区切りで入力：</label><br>
+    <textarea name="data" placeholder="12.1, 13.5, 14.2 13.0 12.8"></textarea><br>
     <input type="submit" value="検定実行">
   </form>
 
-  {% if result %}
-    <h2>検定結果</h2>
-    <p>{{ result }}</p>
+  {% if message %}
+    <p style="color: red;">{{ message }}</p>
   {% endif %}
+
+  {{ table_html | safe }}
 </body>
 </html>
