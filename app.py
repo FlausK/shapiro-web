@@ -17,6 +17,9 @@ def index():
     table_html = ''
     message = ''
     show_plot = False
+    decision_label = ''
+    label_color = ''
+
 
     if request.method == 'POST':
         raw_data = request.form.get('data', '')
