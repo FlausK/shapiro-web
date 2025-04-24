@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>正規性検定</title>
+</head>
+<body>
+  <h1>CSV 正規性検定ツール</h1>
+  <form method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".csv">
+    <input type="submit" value="検定実行">
+  </form>
+  <p>{{ result }}</p>
+</body>
+</html>
