@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>正規性検定</title>
+  <title>正規性検定ツール</title>
 </head>
 <body>
-  <h1>CSV 正規性検定ツール</h1>
-  <form method="POST" enctype="multipart/form-data">
-    <input type="file" name="file" accept=".csv">
+  <h1>数値データ 正規性検定ツール</h1>
+  <form method="POST">
+    <p>数値をカンマ区切りまたはスペース区切りで貼り付けてください:</p>
+    <textarea name="data" rows="5" cols="50" placeholder="12.1, 13.5, 14.2, 13.0"></textarea><br><br>
     <input type="submit" value="検定実行">
   </form>
-  <p>{{ result }}</p>
+
+  {% if result %}
+    <h2>検定結果</h2>
+    <p>{{ result }}</p>
+  {% endif %}
 </body>
 </html>
