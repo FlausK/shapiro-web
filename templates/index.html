@@ -29,6 +29,12 @@
     <input type="submit" value="検定実行">
   </form>
 
+  {% if show_plot %}
+  <h2>グラフ</h2>
+  <img src="/plot.png?{{ config.SEND_FILE_MAX_AGE_DEFAULT }}" alt="Plot">
+  {% endif %}
+
+
   {% if message %}
     <p style="color: red;">{{ message }}</p>
   {% endif %}
