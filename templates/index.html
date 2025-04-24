@@ -39,6 +39,21 @@
     <p style="color: red;">{{ message }}</p>
   {% endif %}
 
+
+
+  {% if decision_label %}
+  <p style="font-size: 1.2em;">
+    <span style="background-color: {% if label_color == 'success' %}#d4edda{% else %}#f8d7da{% endif %};
+                color: {% if label_color == 'success' %}#155724{% else %}#721c24{% endif %};
+                padding: 0.5em 1em;
+                border-radius: 6px;
+                display: inline-block;">
+      {{ decision_label }}
+    </span>
+  </p>
+  {% endif %}
+
+
   {{ table_html | safe }}
 </body>
 </html>

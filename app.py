@@ -28,12 +28,23 @@ def index():
                 nums = np.array(nums)
                 last_data = nums  # プロット用に保存
                 w_stat, p = shapiro(nums)
+
+                decision_label = ''
+                label_color = ''
+                if p > 0.05:
+                    decision_label = '正規分布といえる ✅'
+                    label_color = 'success'
+                else:
+                    decision_label = '正規分布ではない ⚠'
+                    label_color = 'danger'
+
                 mean = np.mean(nums)
                 median = np.median(nums)
                 std = np.std(nums, ddof=1)
                 skewness = skew(nums)
                 kurt = kurtosis(nums)
                 n = len(nums)
+
 
                 df = pd.DataFrame({
                     'Parameter': [
@@ -63,7 +74,15 @@ def index():
         except:
             message = "⚠ 入力形式に誤りがあります。数値をスペースまたはカンマで区切ってください。"
 
-    return render_template("index.html", table_html=table_html, message=message, show_plot=show_plot)
+    return render_template(
+        "index.html",
+        table_html=table_html,
+        message=message,
+        show_plot=show_plot,
+        decision_label=decision_label,
+        label_color=label_color
+    )
+
 
 @app.route('/plot.png')
 def plot_png():
