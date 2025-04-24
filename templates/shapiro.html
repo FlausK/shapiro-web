@@ -2,58 +2,68 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>正規性検定</title>
+  <title>統計ツール - Shapiro & 寿命分析</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    textarea { width: 80%; height: 100px; }
-    table.result-table {
-      border-collapse: collapse;
-      width: 80%;
+    .result-table {
       margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
     }
-    table.result-table td, table.result-table th {
+    .result-table th, .result-table td {
       border: 1px solid #ccc;
       padding: 8px;
       text-align: left;
     }
-    table.result-table tr:nth-child(1) td:nth-child(2) {
-      background-color: #f88;  /* P-value row highlight */
-      font-weight: bold;
-    }
   </style>
 </head>
-<body>
-  <h1>Shapiro-Wilk 正規性検定</h1>
+<body class="container mt-4">
+  <h1 class="mb-4">Shapiro-Wilk検定 ＆ 寿命分析</h1>
+
   <form method="POST">
-    <label>数値をカンマまたはスペース区切りで入力：</label><br>
-    <textarea name="data" placeholder="12.1, 13.5, 14.2 13.0 12.8"></textarea><br>
-    <input type="submit" value="検定実行">
+    <h3>📊 Shapiro-Wilk 正規性検定</h3>
+    <label>数値データ（カンマ or スペース区切り）:</label>
+    <textarea name="data" class="form-control mb-3" rows="3">{{ request.form.get('data', '') }}</textarea>
+
+    {% if message %}
+      <div class="alert alert-warning">{{ message }}</div>
+    {% endif %}
+
+    {% if decision_label %}
+      <div class="alert alert-{{ label_color }}">{{ decision_label }}</div>
+    {% endif %}
+
+    {{ table_html | safe }}
+
+    {% if show_plot %}
+      <h5 class="mt-4">グラフ</h5>
+      <img src="/plot.png" class="img-fluid">
+    {% endif %}
+
+    <hr class="my-4">
+
+    <h3>🛠️ 寿命分析</h3>
+    <label>故障までのデータ（カンマ or スペース区切り）:</label>
+    <textarea name="lifespan_data" class="form-control mb-3" rows="3">{{ lifespan_input or '' }}</textarea>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label>故障時コスト（任意）:</label>
+        <input type="number" name="failure_cost" class="form-control" step="any" value="{{ failure_cost or '' }}">
+      </div>
+      <div class="col-md-6">
+        <label>メンテナンスコスト（任意）:</label>
+        <input type="number" name="maint_cost" class="form-control" step="any" value="{{ maint_cost or '' }}">
+      </div>
+    </div>
+
+    {% if lifespan_result %}
+      <div class="alert alert-info">{{ lifespan_result }}</div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary">分析実行</button>
   </form>
 
-  {% if show_plot %}
-  <h2>グラフ</h2>
-  <img src="/plot.png?{{ config.SEND_FILE_MAX_AGE_DEFAULT }}" alt="Plot">
-  {% endif %}
-
-
-  {% if message %}
-    <p style="color: red;">{{ message }}</p>
-  {% endif %}
-
-
-
-  {% if decision_label %}
-  <p style="font-size: 1.2em;">
-    <span style="background-color: {% if label_color == 'success' %}#d4edda{% else %}#f8d7da{% endif %};
-                color: {% if label_color == 'success' %}#155724{% else %}#721c24{% endif %};
-                padding: 0.5em 1em;
-                border-radius: 6px;
-                display: inline-block;">
-      {{ decision_label }}
-    </span>
-  </p>
-  {% endif %}
-
-
-  {{ table_html | safe }}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
