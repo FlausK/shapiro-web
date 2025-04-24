@@ -113,8 +113,7 @@ def plot_png():
     buf.seek(0)
     return send_file(buf, mimetype='image/png')
 
-    from flask import redirect
 
-    @app.route('/')
-    def index():
-        return redirect('/shapiro')
+@app.route('/')
+def index():
+    return redirect('/shapiro')
