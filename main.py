@@ -11,8 +11,8 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0  # キャッシュ防止
 # 保存するデータをグローバル変数で保持
 last_data = []
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
+@app.route('/shapiro', methods=['GET', 'POST'])
+def shapiro_page():
     global last_data
     table_html = ''
     message = ''
@@ -78,7 +78,7 @@ def index():
             message = "⚠ 入力形式に誤りがあります。数値をスペースまたはカンマで区切ってください。"
 
     return render_template(
-        "index.html",
+        "shapiro.html",
         table_html=table_html,
         message=message,
         show_plot=show_plot,
