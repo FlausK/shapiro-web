@@ -33,10 +33,12 @@
   </nav>
 
   <main>
-    <h1 class="mb-4">{{ heading or 'Statistic' }}</h1>
+    {% if heading %}
+      <h1 class="mb-4">{{ heading }}</h1>
+    {% endif %}
     {% block content %}{% endblock %}
   </main>
-
+  
   <footer class="text-center text-muted py-4 mt-5">
     &copy; 2025 Statistical Toolkit
   </footer>

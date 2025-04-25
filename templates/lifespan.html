@@ -19,8 +19,26 @@
 
   {% if result %}
     <div class="alert alert-info">{{ result|safe }}</div>
+    {% if comment %}
+      <p><b>{{ comment }}</b></p>
+    {% endif %}
+    {% if tip %}
+      <p class="text-muted">{{ tip }}</p>
+    {% endif %}
+    {% if cdf_path and pdf_path %}
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <h5>📈 CDF</h5>
+          <img src="{{ url_for('static', filename='weibull_cdf.png') }}" class="img-fluid rounded">
+        </div>
+        <div class="col-md-6">
+          <h5>📉 PDF</h5>
+          <img src="{{ url_for('static', filename='weibull_pdf.png') }}" class="img-fluid rounded">
+        </div>
+      </div>
+    {% endif %}
   {% endif %}
 
-  <button type="submit" class="btn btn-primary">Analyze</button>
+  <button type="submit" class="btn btn-primary mt-3">Analyze</button>
 </form>
 {% endblock %}
