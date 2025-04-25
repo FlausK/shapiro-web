@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
 <form method="POST">
-  <h4>🛠️ 寿命分析 / Lifespan Analysis</h4>
+  <h3>🛠️ 寿命分析（Weibull分布）</h3>
 
-  <label>故障までのデータ（カンマ or スペース区切り）<br>Failure time data (comma or space separated):</label>
+  <label>故障までのデータ（カンマ or スペース区切り）:</label>
   <textarea name="lifespan_data" class="form-control mb-3" rows="3">{{ lifespan_input or '' }}</textarea>
 
   <div class="row mb-3">
     <div class="col-md-6">
-      <label>故障時コスト（任意） / Failure cost (optional):</label>
+      <label>故障時コスト（任意）:</label>
       <input type="number" name="failure_cost" class="form-control" step="any" value="{{ failure_cost or '' }}">
     </div>
     <div class="col-md-6">
-      <label>メンテナンスコスト（任意） / Maintenance cost (optional):</label>
+      <label>メンテナンスコスト（任意）:</label>
       <input type="number" name="maint_cost" class="form-control" step="any" value="{{ maint_cost or '' }}">
     </div>
   </div>
 
-  {% if lifespan_result %}
-    <div class="alert alert-info">{{ lifespan_result | safe }}</div>
+  {% if result %}
+    <div class="alert alert-info">{{ result|safe }}</div>
   {% endif %}
 
-  <button type="submit" class="btn btn-primary">分析実行 / Analyze</button>
+  <button type="submit" class="btn btn-primary">分析実行</button>
 </form>
 {% endblock %}
