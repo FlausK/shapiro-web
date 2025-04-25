@@ -1,3 +1,4 @@
+# main.py
 from flask import Flask, render_template, request, send_file, redirect
 from scipy.stats import shapiro, skew, kurtosis, probplot, weibull_min
 from scipy.special import gamma
@@ -8,6 +9,7 @@ import io
 
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+plt.rcParams['font.family'] = 'IPAexGothic'  # Prevent Japanese font from breaking
 last_data = []
 
 @app.route('/')
@@ -17,7 +19,7 @@ def index():
 @app.route('/shapiro', methods=['GET', 'POST'])
 def shapiro_page():
     global last_data
-    table_html, message, show_plot = '', '', False
+    table_data, message, show_plot = [], '', False
     decision_label, label_color = '', ''
 
     if request.method == 'POST':
@@ -47,57 +49,13 @@ def shapiro_page():
                     round(np.std(nums, ddof=1), 5), round(skew(nums), 3), round(kurtosis(nums), 3)
                 ]
             })
-
-            def highlight_row(row):
-                if 'P値' in row['Parameter'] and row['Value'] < 0.05:
-                    return ['background-color: #f8d7da'] * len(row)
-                return [''] * len(row)
-
-            table_html = df.style.apply(highlight_row, axis=1).to_html(classes="result-table", border=0)
+            table_data = df.to_dict(orient='records')
         except:
-            message = "⚠ 入力形式に誤りがあります / Invalid format. Please enter numbers separated by commas or spaces."
+            message = "⚠ 入力形式に誤りがあります / Invalid input format"
 
-    return render_template("shapiro.html", title="Shapiro-Wilk検定", heading="Shapiro-Wilk 正規性検定",
-                           table_html=table_html, message=message, show_plot=show_plot,
-                           decision_label=decision_label, label_color=label_color)
-
-@app.route('/lifespan', methods=['GET', 'POST'])
-def lifespan_page():
-    result = ''
-    lifespan_input = request.form.get('lifespan_data', '').strip()
-    failure_cost = request.form.get('failure_cost', '')
-    maint_cost = request.form.get('maint_cost', '')
-
-    if request.method == 'POST' and lifespan_input:
-        try:
-            failures = np.array([float(x) for x in lifespan_input.replace(',', ' ').split()])
-            shape, loc, scale = weibull_min.fit(failures, floc=0)
-            beta, eta = shape, scale
-            avg_life = eta * gamma(1 + 1 / beta)
-
-            result = (
-                f"Weibull推定 / Weibull Fit:<br>"
-                f"形状パラメータ β / Shape β ≒ {round(beta, 3)}<br>"
-                f"スケールパラメータ η / Scale η ≒ {round(eta, 3)}<br>"
-                f"平均寿命 / Mean ≒ {round(avg_life, 2)}（単位無視 / unitless）"
-            )
-
-            if failure_cost and maint_cost:
-                fc, mc = float(failure_cost), float(maint_cost)
-                min_cost = float('inf')
-                best_day = eta
-                for t in np.linspace(eta * 0.5, eta * 2.5, 100):
-                    prob = weibull_min.cdf(t, beta, scale=eta)
-                    cost = prob * fc + mc
-                    if cost < min_cost:
-                        min_cost, best_day = cost, t
-                result += f"<br>最適交換時期 / Optimal replacement ≒ <b>{round(best_day, 2)}</b>"
-        except:
-            result = "⚠ 入力形式に誤りがあります / Invalid input format"
-
-    return render_template("lifespan.html", title="寿命分析", heading="寿命分析 / Lifespan Analysis",
-                           lifespan_input=lifespan_input, failure_cost=failure_cost,
-                           maint_cost=maint_cost, result=result)
+    return render_template("shapiro.html", table_data=table_data, message=message, show_plot=show_plot,
+                           decision_label=decision_label, label_color=label_color,
+                           title="Shapiro-Wilk検定", heading="Shapiro-Wilk 正規性検定 / Normality Test")
 
 @app.route('/plot.png')
 def plot_png():
@@ -105,7 +63,9 @@ def plot_png():
     fig, axs = plt.subplots(1, 2, figsize=(10, 4))
     axs[0].hist(last_data, bins='auto', color='skyblue', edgecolor='black')
     axs[0].set_title('ヒストグラム / Histogram')
-    axs[1].set_title("QQプロット / QQ Plot")
+    axs[0].set_xlabel('値 / Value')
+    axs[0].set_ylabel('頻度 / Frequency')
+    axs[1].set_title("確率プロット / Probability Plot")
     probplot(last_data, dist="norm", plot=axs[1])
     buf = io.BytesIO()
     plt.tight_layout()

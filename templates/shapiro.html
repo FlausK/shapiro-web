@@ -1,25 +1,37 @@
 {% extends "base.html" %}
 {% block content %}
 <form method="POST">
-  <h3>📊 Shapiro-Wilk 正規性検定</h3>
-  <label>数値データ（カンマ or スペース区切り）:</label>
+  <label>数値データ（カンマまたはスペース区切り）/ Input values (comma or space separated):</label>
   <textarea name="data" class="form-control mb-3" rows="3">{{ request.form.get('data', '') }}</textarea>
 
   {% if message %}
     <div class="alert alert-warning">{{ message }}</div>
   {% endif %}
-
   {% if decision_label %}
     <div class="alert alert-{{ label_color }}">{{ decision_label }}</div>
   {% endif %}
 
-  {{ table_html | safe }}
+  {% if table_data %}
+    <table class="table table-bordered mt-3">
+      <thead class="table-light">
+        <tr><th>パラメータ / Parameter</th><th>値 / Value</th></tr>
+      </thead>
+      <tbody>
+        {% for row in table_data %}
+          <tr {% if 'P値' in row['Parameter'] and row['Value'] < 0.05 %} class="table-danger" {% endif %}>
+            <td>{{ row['Parameter'] }}</td>
+            <td>{{ "%.6f"|format(row['Value']) }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
 
   {% if show_plot %}
-    <h5 class="mt-4">グラフ</h5>
+    <h5 class="mt-4">グラフ / Graph</h5>
     <img src="/plot.png" class="img-fluid">
   {% endif %}
 
-  <button type="submit" class="btn btn-primary mt-3">検定実行</button>
+  <button type="submit" class="btn btn-primary mt-3">検定実行 / Run Test</button>
 </form>
 {% endblock %}
