@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="POST">
+  <h3 class="mb-4">📏 Minimum Sample Size Estimator</h3>
+
+  <!-- 用途選択 -->
+  <div class="mb-3">
+    <label for="purpose">Select your purpose:</label>
+    <select id="purpose" name="purpose" class="form-select" onchange="toggleFields()">
+      <option value="cpk">Process Capability (Cpk)</option>
+      <option value="ttest">Before/After Comparison (t-test)</option>
+      <option value="reliability">Reliability Test</option>
+      <option value="proportion">Pass Rate / Proportion</option>
+    </select>
+  </div>
+
+  <!-- 共通: 有意水準 -->
+  <div class="mb-3">
+    <label>Significance Level (α):</label>
+    <input type="number" step="0.01" name="alpha" class="form-control" value="0.05">
+  </div>
+
+  <!-- Cpk用 -->
+  <div id="cpk_fields" class="mb-3">
+    <label>Target Cpk:</label>
+    <input type="number" step="0.01" name="cpk_target" class="form-control" value="1.33">
+  </div>
+
+  <!-- t検定用 -->
+  <div id="ttest_fields" class="mb-3" style="display:none">
+    <label>Effect Size (d):</label>
+    <input type="number" step="0.01" name="effect_size" class="form-control" value="0.5">
+    <label class="mt-2">Power (1 - β):</label>
+    <input type="number" step="0.01" name="power" class="form-control" value="0.8">
+  </div>
+
+  <!-- 信頼性試験用 -->
+  <div id="reliability_fields" class="mb-3" style="display:none">
+    <label>Confidence Level:</label>
+    <input type="number" step="0.01" name="confidence" class="form-control" value="0.95">
+    <label class="mt-2">Allowed Failure Rate:</label>
+    <input type="number" step="0.01" name="failure_rate" class="form-control" value="0.1">
+  </div>
+
+  <!-- 比率検定 -->
+  <div id="proportion_fields" class="mb-3" style="display:none">
+    <label>Expected Proportion (e.g., 0.95):</label>
+    <input type="number" step="0.01" name="expected_prop" class="form-control" value="0.95">
+    <label class="mt-2">Margin of Error:</label>
+    <input type="number" step="0.01" name="margin" class="form-control" value="0.05">
+  </div>
+
+  <button type="submit" class="btn btn-primary mt-3">Calculate</button>
+</form>
+
+{% if result %}
+  <div class="alert alert-info mt-4">
+    <strong>Required Sample Size:</strong> {{ result }}
+  </div>
+{% endif %}
+
+<script>
+function toggleFields() {
+  const value = document.getElementById("purpose").value;
+  document.getElementById("cpk_fields").style.display = (value === "cpk") ? "block" : "none";
+  document.getElementById("ttest_fields").style.display = (value === "ttest") ? "block" : "none";
+  document.getElementById("reliability_fields").style.display = (value === "reliability") ? "block" : "none";
+  document.getElementById("proportion_fields").style.display = (value === "proportion") ? "block" : "none";
+}
+window.onload = toggleFields;
+</script>
+{% endblock %}

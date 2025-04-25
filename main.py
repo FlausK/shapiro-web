@@ -8,6 +8,12 @@ import io
 import os
 import base64
 
+from statsmodels.stats.power import TTestIndPower
+from math import log, ceil
+from scipy.stats import norm
+
+
+
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 last_data = []
@@ -170,6 +176,41 @@ def lifespan_page():
                            tip=tip if 'tip' in locals() else '',
                            cdf_path=cdf_path, pdf_path=pdf_path,
                            cost_plot_path=cost_plot_path)
+
+
+# --- サンプルサイズ計算 ---
+@app.route('/samplesize', methods=['GET', 'POST'])
+def sample_size_page():
+    result = ''
+    if request.method == 'POST':
+        purpose = request.form.get('purpose')
+        alpha = float(request.form.get('alpha', 0.05))
+
+        if purpose == 'cpk':
+            cpk_target = float(request.form.get('cpk_target', 1.33))
+            z = norm.ppf(1 - alpha / 2)
+            result = ceil((z / (cpk_target / 3))**2)
+
+        elif purpose == 'ttest':
+            effect_size = float(request.form.get('effect_size', 0.5))
+            power = float(request.form.get('power', 0.8))
+            analysis = TTestIndPower()
+            result = ceil(analysis.solve_power(effect_size=effect_size, alpha=alpha, power=power, alternative='two-sided'))
+
+        elif purpose == 'reliability':
+            confidence = float(request.form.get('confidence', 0.95))
+            failure_rate = float(request.form.get('failure_rate', 0.1))
+            result = ceil(log(1 - confidence) / log(1 - (1 - failure_rate)))
+
+        elif purpose == 'proportion':
+            p = float(request.form.get('expected_prop', 0.95))
+            margin = float(request.form.get('margin', 0.05))
+            z = norm.ppf(1 - alpha / 2)
+            result = ceil((z**2 * p * (1 - p)) / (margin**2))
+
+    return render_template("samplesize.html", title="Sample Size Calculator", result=result)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
