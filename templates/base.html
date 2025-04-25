@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title or '統計ツール' }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .result-table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .result-table th, .result-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body class="container mt-4">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">統計ツール</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="/shapiro">Shapiro-Wilk検定</a></li>
+          <li class="nav-item"><a class="nav-link" href="/lifespan">寿命分析</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <h1 class="mb-4">{{ heading or '統計分析' }}</h1>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="text-center text-muted py-4 mt-5">
+    &copy; 2025 統計ツール | Statistical Toolkit
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
