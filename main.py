@@ -12,9 +12,11 @@ last_data = []
 
 @app.route('/')
 def index():
-    return render_template("index.html", title="統計ツール", heading="統計ツールへようこそ")
+    return render_template("index.html", title="Statistical Toolkit", heading="Welcome to the Statistical Toolkit")
 
-# --- Shapiro-Wilk 正規性検定 ---
+
+
+# --- Shapiro-Wilk ---
 @app.route('/shapiro', methods=['GET', 'POST'])
 def shapiro_page():
     global last_data
@@ -27,7 +29,7 @@ def shapiro_page():
             nums = np.array([float(x) for x in raw_data.replace(',', ' ').split()])
             last_data = nums
             w_stat, p = shapiro(nums)
-            decision_label = '正規分布といえる ✅' if p > 0.05 else '正規分布ではない ⚠'
+            decision_label = 'Normally distributed ✅' if p > 0.05 else 'Not normally distributed ⚠'
             label_color = 'success' if p > 0.05 else 'danger'
             show_plot = True
 
@@ -41,13 +43,15 @@ def shapiro_page():
             })
             table_html = df.to_html(index=False, classes="result-table", border=0, escape=False)
         except:
-            message = "⚠ 入力形式に誤りがあります"
+            message = "⚠ Invalid input format. Please enter numbers separated by commas or spaces."
 
-    return render_template("shapiro.html", title="Shapiro-Wilk検定", heading="Shapiro-Wilk 正規性検定",
+    return render_template("shapiro.html", title="Shapiro-Wilk Test", heading="Shapiro-Wilk Normality Test",
                            table_html=table_html, message=message, show_plot=show_plot,
                            decision_label=decision_label, label_color=label_color)
 
-# --- 寿命分析 ---
+
+
+# --- Lifespan ---
 @app.route('/lifespan', methods=['GET', 'POST'])
 def lifespan_page():
     result = ''
@@ -62,7 +66,7 @@ def lifespan_page():
             beta, eta = shape, scale
             avg_life = eta * gamma(1 + 1 / beta)
 
-            result = f"Weibull推定 β ≒ {round(beta, 3)}, η ≒ {round(eta, 3)}, 平均寿命 ≒ {round(avg_life, 2)}"
+            result = f"Weibull Estimation: β ≒ {round(beta, 3)}, η ≒ {round(eta, 3)}, Mean ≒ {round(avg_life, 2)}"
             if failure_cost and maint_cost:
                 fc, mc = float(failure_cost), float(maint_cost)
                 min_cost = float('inf')
@@ -71,15 +75,17 @@ def lifespan_page():
                     cost = prob * fc + mc
                     if cost < min_cost:
                         min_cost, best_day = cost, t
-                result += f"<br>最適交換時期：<b>{round(best_day, 2)}</b> 単位"
+                result += f"<br>Optimal replacement timing: <b>{round(best_day, 2)}</b> units"
         except:
-            result = "⚠ データ形式が正しくありません"
+            result = "⚠ Invalid data format. Please enter numerical values separated by commas or spaces."
 
-    return render_template("lifespan.html", title="寿命分析", heading="寿命分析（Weibull分布）",
+    return render_template("lifespan.html", title="Lifespan Analysis", heading="Lifespan Analysis (Weibull)",
                            lifespan_input=lifespan_input, failure_cost=failure_cost,
                            maint_cost=maint_cost, result=result)
 
-# --- グラフ用 ---
+
+
+# --- Graph generation route ---
 @app.route('/plot.png')
 def plot_png():
     global last_data
