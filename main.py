@@ -82,8 +82,6 @@ def lifespan_page():
     lifespan_input = request.form.get('lifespan_data', '').strip()
     failure_cost = request.form.get('failure_cost', '')
     maint_cost = request.form.get('maint_cost', '')
-    comment = tip = ''
-    cdf_path = pdf_path = ''
     cost_plot_path = ''
 
     if request.method == 'POST' and lifespan_input:
@@ -92,107 +90,55 @@ def lifespan_page():
             shape, loc, scale = weibull_min.fit(failures, floc=0)
             beta, eta = round(shape, 3), round(scale, 3)
             avg_life = round(eta * gamma(1 + 1 / beta), 2)
-            result = f"Weibull Estimation: β ≒ {beta}, η ≒ {eta}, Mean ≒ {avg_life}"
+            result = f"Weibull Estimation: β ≈ {beta}, η ≈ {eta}, Mean ≈ {avg_life}"
 
-            # 点検アドバイス
+            # Preventive timing advice
             tip = f"Recommended inspection start: around {round(avg_life * 0.75, 2)} units"
 
-            # 故障傾向コメント
-            if beta < 1:
-                comment = "Failure trend: Early failure (β < 1)"
-            elif beta == 1:
-                comment = "Failure trend: Random failure (β = 1)"
-            else:
-                comment = "Failure trend: Wear-out failure (β > 1)"
-
-            # コスト最適化
+            # Cost model only when both costs are provided
             if failure_cost and maint_cost:
                 fc, mc = float(failure_cost), float(maint_cost)
-                min_cost, best_day = float('inf'), 0
 
-                for t in np.linspace(max(1, eta * 0.3), eta * 3, 100):
-                    prob = weibull_min.cdf(t, beta, scale=eta)
-                    cost = prob * fc + mc
-                    if cost < min_cost:
-                        min_cost, best_day = cost, t
+                max_t = max(failures)
+                t_vals = np.linspace(1, max_t, 100)
+                failure_probs = weibull_min.cdf(t_vals, beta, scale=eta)
+                exchange_freq = max_t / t_vals
 
-                # 前後比較
-                t_minus = best_day * 0.9
-                t_plus = best_day * 1.1
-                c_minus = weibull_min.cdf(t_minus, beta, scale=eta) * fc + mc
-                c_best = weibull_min.cdf(best_day, beta, scale=eta) * fc + mc
-                c_plus = weibull_min.cdf(t_plus, beta, scale=eta) * fc + mc
-
-                result += f"<br><b>Optimal replacement timing:</b> {round(best_day, 2)} units"
-                result += f"<br>→ Cost at {round(t_minus, 2)}: {round(c_minus, 2)}"
-                result += f"<br>→ Cost at {round(best_day, 2)} (best): {round(c_best, 2)}"
-                result += f"<br>→ Cost at {round(t_plus, 2)}: {round(c_plus, 2)}"
-
-                # コスト曲線グラフ
-                t_range = np.linspace(max(1, eta * 0.3), eta * 3, 100)
-                failure_probs = weibull_min.cdf(t_range, beta, scale=eta)
-                fail_costs = failure_probs * fc
-                maint_costs = np.full_like(fail_costs, mc)
+                fail_costs = failure_probs * fc * exchange_freq
+                maint_costs = mc * exchange_freq
                 total_costs = fail_costs + maint_costs
 
+                best_index = np.argmin(total_costs)
+                best_t = t_vals[best_index]
+                result += f"<br><b>Optimal maintenance interval:</b> {round(best_t, 2)} units"
+
+                # Save cost curve
+                os.makedirs('static', exist_ok=True)
                 cost_plot_path = os.path.join('static', 'cost_curve.png')
                 plt.figure(figsize=(6, 4))
-                plt.plot(t_range, fail_costs, label='Failure Cost', linestyle='--')
-                plt.plot(t_range, maint_costs, label='Maintenance Cost', linestyle=':')
-                plt.plot(t_range, total_costs, label='Total Cost', linewidth=2)
-                plt.axvline(best_day, color='gray', linestyle='-', alpha=0.5, label='Optimal Timing')
-                plt.xlabel("Replacement Timing")
-                plt.ylabel("Cost")
-                plt.title("Cost vs Replacement Timing")
+                plt.plot(t_vals, fail_costs, label='Failure Cost', color='deeppink')
+                plt.plot(t_vals, maint_costs, label='Preventive Action Cost', color='dodgerblue')
+                plt.plot(t_vals, total_costs, label='Total Impact', color='green')
+                plt.axvline(best_t, color='gray', linestyle='--', label='Optimum')
+                plt.xlabel("Maintenance Interval (t)")
+                plt.ylabel("Cost (per year)")
+                plt.title("Business Impact vs Maintenance Frequency")
                 plt.legend()
                 plt.grid(True)
                 plt.tight_layout()
                 plt.savefig(cost_plot_path)
                 plt.close()
 
-            # CDF & PDF グラフ
-            t_vals = np.linspace(0, max(failures) * 1.5, 200)
-            cdf = weibull_min.cdf(t_vals, beta, scale=eta)
-            pdf = weibull_min.pdf(t_vals, beta, scale=eta)
-
-            os.makedirs('static', exist_ok=True)
-            cdf_path = os.path.join('static', 'weibull_cdf.png')
-            pdf_path = os.path.join('static', 'weibull_pdf.png')
-
-            plt.figure(figsize=(6, 4))
-            plt.plot(t_vals, cdf)
-            plt.title("Weibull CDF")
-            plt.xlabel("Time")
-            plt.ylabel("Cumulative Probability")
-            plt.grid(True)
-            plt.tight_layout()
-            plt.savefig(cdf_path)
-            plt.close()
-
-            plt.figure(figsize=(6, 4))
-            plt.plot(t_vals, pdf)
-            plt.title("Weibull PDF")
-            plt.xlabel("Time")
-            plt.ylabel("Density")
-            plt.grid(True)
-            plt.tight_layout()
-            plt.savefig(pdf_path)
-            plt.close()
-
         except ValueError:
-            result = "⚠ Invalid data format. Please enter numerical values separated by commas or spaces."
+            result = "\u26a0 Invalid data format. Please enter numerical values separated by commas or spaces."
         except Exception as e:
-            result = f"⚠ Unexpected error: {e}"
+            result = f"\u26a0 Unexpected error: {e}"
 
     return render_template("lifespan.html", title="Lifespan Analysis", heading=None,
-                       lifespan_input=lifespan_input, failure_cost=failure_cost,
-                       maint_cost=maint_cost, result=result,
-                       comment=comment, tip=tip,
-                       cdf_path=cdf_path, pdf_path=pdf_path,
-                       cost_plot_path=cost_plot_path)
+                           lifespan_input=lifespan_input, failure_cost=failure_cost,
+                           maint_cost=maint_cost, result=result,
+                           tip=tip if 'tip' in locals() else '',
+                           cost_plot_path=cost_plot_path)
 
-
-
-# --- アプリ実行 ---
 if __name__ == '__main__':
     app.run(debug=True)
