@@ -1,7 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
-  <p>下記の機能をご利用ください / Please choose from the tools below:</p>
-  <ul>
-    <li><a href="/shapiro">Shapiro-Wilk 正規性検定 / Normality Test</a></li>
-  </ul>
+<div class="text-center">
+  <h2 class="mb-4">ご利用可能な統計ツール / Available Tools</h2>
+  <div class="row justify-content-center g-4">
+    <div class="col-md-5">
+      <a href="/shapiro" class="text-decoration-none">
+        <div class="card shadow text-center">
+          <div class="card-body">
+            <div class="fs-1">📊</div>
+            <h5 class="card-title">Shapiro-Wilk 正規性検定</h5>
+            <p class="card-text">データが正規分布に従っているかを検定します。</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-5">
+      <a href="/lifespan" class="text-decoration-none">
+        <div class="card shadow text-center">
+          <div class="card-body">
+            <div class="fs-1">🛠️</div>
+            <h5 class="card-title">寿命分析 / Weibull分布</h5>
+            <p class="card-text">故障データから寿命分布と最適交換タイミングを推定します。</p>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
 {% endblock %}
