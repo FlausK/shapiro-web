@@ -6,14 +6,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import io
 import os
+import base64
 
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 last_data = []
 
+
 @app.route('/')
 def index():
     return render_template("index.html", title="Statistical Toolkit", heading="Welcome to the Statistical Toolkit")
+
 
 # --- Shapiro-Wilk 正規性検定 ---
 @app.route('/shapiro', methods=['GET', 'POST'])
@@ -21,6 +24,7 @@ def shapiro_page():
     global last_data
     table_html, message, show_plot = '', '', False
     decision_label, label_color = '', ''
+    plot_data = ''
 
     if request.method == 'POST':
         raw_data = request.form.get('data', '')
@@ -32,6 +36,7 @@ def shapiro_page():
             label_color = 'success' if p > 0.05 else 'danger'
             show_plot = True
 
+            # 統計表
             df = pd.DataFrame({
                 'Parameter': ['P-value', 'W', 'Size', 'Average', 'Median', 'Std Dev', 'Skew', 'Kurtosis'],
                 'Value': [
@@ -41,12 +46,34 @@ def shapiro_page():
                 ]
             })
             table_html = df.to_html(index=False, classes="result-table", border=0, escape=False)
+
+            # 画像生成 → base64エンコードしてHTMLに埋め込み
+            fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+            axs[0].hist(nums, bins='auto', color='skyblue', edgecolor='black')
+            axs[0].set_title('Histogram')
+            axs[1].set_title("QQ Plot")
+            probplot(nums, dist="norm", plot=axs[1])
+            buf = io.BytesIO()
+            plt.tight_layout()
+            plt.savefig(buf, format='png')
+            plt.close()
+            buf.seek(0)
+            plot_data = base64.b64encode(buf.read()).decode('utf-8')
+
         except:
             message = "⚠ Invalid input format. Please enter numbers separated by commas or spaces."
 
-    return render_template("shapiro.html", title="Shapiro-Wilk Test", heading="Shapiro-Wilk Normality Test",
-                           table_html=table_html, message=message, show_plot=show_plot,
-                           decision_label=decision_label, label_color=label_color)
+    return render_template("shapiro.html",
+                           title="Shapiro-Wilk Test",
+                           heading=None,
+                           table_html=table_html,
+                           message=message,
+                           show_plot=show_plot,
+                           decision_label=decision_label,
+                           label_color=label_color,
+                           plot_data=plot_data)
+
+
 
 # --- Weibull 寿命分析 ---
 @app.route('/lifespan', methods=['GET', 'POST'])
@@ -120,27 +147,12 @@ def lifespan_page():
         except:
             result = "⚠ Invalid data format. Please enter numerical values separated by commas or spaces."
 
-    return render_template("lifespan.html", title="Lifespan Analysis", heading="Lifespan Analysis (Weibull)",
+    return render_template("lifespan.html", title="Lifespan Analysis", heading=None,
                            lifespan_input=lifespan_input, failure_cost=failure_cost,
                            maint_cost=maint_cost, result=result,
                            comment=comment, tip=tip,
                            cdf_path=cdf_path, pdf_path=pdf_path)
 
-# --- グラフ画像 (Shapiro用) ---
-@app.route('/plot.png')
-def plot_png():
-    global last_data
-    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
-    axs[0].hist(last_data, bins='auto', color='skyblue', edgecolor='black')
-    axs[0].set_title('Histogram')
-    axs[1].set_title("QQ Plot")
-    probplot(last_data, dist="norm", plot=axs[1])
-    buf = io.BytesIO()
-    plt.tight_layout()
-    plt.savefig(buf, format='png')
-    plt.close()
-    buf.seek(0)
-    return send_file(buf, mimetype='image/png')
 
 # --- アプリ実行 ---
 if __name__ == '__main__':
