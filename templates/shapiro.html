@@ -2,67 +2,82 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>統計ツール - Shapiro & 寿命分析</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>統計ツール - Statistical Tools</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    .result-table {
-      margin-top: 20px;
-      border-collapse: collapse;
-      width: 100%;
+    .hero {
+      background: url('https://images.unsplash.com/photo-1504384764586-bb4cdc1707b0?fit=crop&w=1950&q=80') no-repeat center center;
+      background-size: cover;
+      height: 400px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
     }
-    .result-table th, .result-table td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+    .category-card {
+      border: none;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .category-card:hover {
+      transform: scale(1.05);
+    }
+    .category-icon {
+      font-size: 2.5rem;
     }
   </style>
 </head>
-<body class="container mt-4">
-  <h1 class="mb-4">Shapiro-Wilk検定 ＆ 寿命分析</h1>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="#">統計ツール</a>
+    </div>
+  </nav>
 
-  <form method="POST">
-    <h3>📊 Shapiro-Wilk 正規性検定</h3>
-    <label>数値データ（カンマ or スペース区切り）:</label>
-    <textarea name="data" class="form-control mb-3" rows="3">{{ request.form.get('data', '') }}</textarea>
+  <header class="hero">
+    <div>
+      <h1>統計ツールへようこそ</h1>
+      <p class="lead">Welcome to the Statistical Tools Hub</p>
+    </div>
+  </header>
 
-    {% if message %}
-      <div class="alert alert-warning">{{ message }}</div>
-    {% endif %}
-
-    {% if decision_label %}
-      <div class="alert alert-{{ label_color }}">{{ decision_label }}</div>
-    {% endif %}
-
-    {{ table_html | safe }}
-
-    {% if show_plot %}
-      <h5 class="mt-4">グラフ</h5>
-      <img src="/plot.png" class="img-fluid">
-    {% endif %}
-
-    <hr class="my-4">
-
-    <h3>🛠️ 寿命分析</h3>
-    <label>故障までのデータ（カンマ or スペース区切り）:</label>
-    <textarea name="lifespan_data" class="form-control mb-3" rows="3">{{ lifespan_input or '' }}</textarea>
-
-    <div class="row mb-3">
+  <div class="container mt-5">
+    <h2 class="text-center mb-4">利用可能なツール / Available Tools</h2>
+    <div class="row g-4">
       <div class="col-md-6">
-        <label>故障時コスト（任意）:</label>
-        <input type="number" name="failure_cost" class="form-control" step="any" value="{{ failure_cost or '' }}">
+        <a href="/shapiro" class="text-decoration-none">
+          <div class="card category-card shadow">
+            <div class="card-body">
+              <div class="category-icon mb-3">📊</div>
+              <h5 class="card-title">Shapiro-Wilk 正規性検定</h5>
+              <p class="card-text">データが正規分布に従っているかを検定します</p>
+            </div>
+          </div>
+        </a>
       </div>
       <div class="col-md-6">
-        <label>メンテナンスコスト（任意）:</label>
-        <input type="number" name="maint_cost" class="form-control" step="any" value="{{ maint_cost or '' }}">
+        <a href="/lifespan" class="text-decoration-none">
+          <div class="card category-card shadow">
+            <div class="card-body">
+              <div class="category-icon mb-3">🛠️</div>
+              <h5 class="card-title">寿命分析 / Weibull</h5>
+              <p class="card-text">故障データから寿命分布と最適交換タイミングを推定します</p>
+            </div>
+          </div>
+        </a>
       </div>
     </div>
+  </div>
 
-    {% if lifespan_result %}
-      <div class="alert alert-info">{{ lifespan_result }}</div>
-    {% endif %}
-
-    <button type="submit" class="btn btn-primary">分析実行</button>
-  </form>
+  <footer class="text-center text-muted py-4 mt-5">
+    &copy; 2025 統計ツール | Statistical Toolkit
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
