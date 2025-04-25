@@ -94,7 +94,7 @@ def lifespan_page():
             avg_life = round(eta * gamma(1 + 1 / beta), 2)
             result = f"Weibull Estimation: β ≒ {beta}, η ≒ {eta}, Mean ≒ {avg_life}"
 
-            # 常に表示：点検アドバイス
+            # 点検アドバイス
             tip = f"Recommended inspection start: around {round(avg_life * 0.75, 2)} units"
 
             # 故障傾向コメント
@@ -105,7 +105,7 @@ def lifespan_page():
             else:
                 comment = "Failure trend: Wear-out failure (β > 1)"
 
-            # オプション：コスト最適化
+            # コスト最適化
             if failure_cost and maint_cost:
                 fc, mc = float(failure_cost), float(maint_cost)
                 min_cost, best_day = float('inf'), 0
@@ -116,7 +116,7 @@ def lifespan_page():
                     if cost < min_cost:
                         min_cost, best_day = cost, t
 
-                # コスト比較：前後 ±10% の点
+                # 前後比較
                 t_minus = best_day * 0.9
                 t_plus = best_day * 1.1
                 c_minus = weibull_min.cdf(t_minus, beta, scale=eta) * fc + mc
@@ -128,7 +128,7 @@ def lifespan_page():
                 result += f"<br>→ Cost at {round(best_day, 2)} (best): {round(c_best, 2)}"
                 result += f"<br>→ Cost at {round(t_plus, 2)}: {round(c_plus, 2)}"
 
-                # --- コスト vs 交換タイミングのグラフ ---
+                # コスト曲線グラフ
                 t_range = np.linspace(max(1, eta * 0.3), eta * 3, 100)
                 failure_probs = weibull_min.cdf(t_range, beta, scale=eta)
                 fail_costs = failure_probs * fc
@@ -150,8 +150,7 @@ def lifespan_page():
                 plt.savefig(cost_plot_path)
                 plt.close()
 
-
-            # グラフ作成（CDF & PDF）
+            # CDF & PDF グラフ
             t_vals = np.linspace(0, max(failures) * 1.5, 200)
             cdf = weibull_min.cdf(t_vals, beta, scale=eta)
             pdf = weibull_min.pdf(t_vals, beta, scale=eta)
@@ -180,8 +179,10 @@ def lifespan_page():
             plt.savefig(pdf_path)
             plt.close()
 
-        except:
+        except ValueError:
             result = "⚠ Invalid data format. Please enter numerical values separated by commas or spaces."
+        except Exception as e:
+            result = f"⚠ Unexpected error: {e}"
 
     return render_template("lifespan.html", title="Lifespan Analysis", heading=None,
                        lifespan_input=lifespan_input, failure_cost=failure_cost,
