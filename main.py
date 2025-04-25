@@ -83,6 +83,8 @@ def lifespan_page():
     failure_cost = request.form.get('failure_cost', '')
     maint_cost = request.form.get('maint_cost', '')
     cost_plot_path = ''
+    cdf_path = ''
+    pdf_path = ''
 
     if request.method == 'POST' and lifespan_input:
         try:
@@ -94,6 +96,35 @@ def lifespan_page():
 
             # Preventive timing advice
             tip = f"Recommended inspection start: around {round(avg_life * 0.75, 2)} units"
+
+            # Generate CDF and PDF graphs
+            os.makedirs('static', exist_ok=True)
+            t_vals = np.linspace(0, max(failures) * 1.5, 200)
+            cdf = weibull_min.cdf(t_vals, beta, scale=eta)
+            pdf = weibull_min.pdf(t_vals, beta, scale=eta)
+
+            cdf_path = os.path.join('static', 'weibull_cdf.png')
+            pdf_path = os.path.join('static', 'weibull_pdf.png')
+
+            plt.figure(figsize=(6, 4))
+            plt.plot(t_vals, cdf)
+            plt.title("Weibull CDF")
+            plt.xlabel("Time")
+            plt.ylabel("Cumulative Probability")
+            plt.grid(True)
+            plt.tight_layout()
+            plt.savefig(cdf_path)
+            plt.close()
+
+            plt.figure(figsize=(6, 4))
+            plt.plot(t_vals, pdf)
+            plt.title("Weibull PDF")
+            plt.xlabel("Time")
+            plt.ylabel("Density")
+            plt.grid(True)
+            plt.tight_layout()
+            plt.savefig(pdf_path)
+            plt.close()
 
             # Cost model only when both costs are provided
             if failure_cost and maint_cost:
@@ -113,7 +144,6 @@ def lifespan_page():
                 result += f"<br><b>Optimal maintenance interval:</b> {round(best_t, 2)} units"
 
                 # Save cost curve
-                os.makedirs('static', exist_ok=True)
                 cost_plot_path = os.path.join('static', 'cost_curve.png')
                 plt.figure(figsize=(6, 4))
                 plt.plot(t_vals, fail_costs, label='Failure Cost', color='deeppink')
@@ -138,6 +168,7 @@ def lifespan_page():
                            lifespan_input=lifespan_input, failure_cost=failure_cost,
                            maint_cost=maint_cost, result=result,
                            tip=tip if 'tip' in locals() else '',
+                           cdf_path=cdf_path, pdf_path=pdf_path,
                            cost_plot_path=cost_plot_path)
 
 if __name__ == '__main__':
