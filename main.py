@@ -84,6 +84,7 @@ def lifespan_page():
     maint_cost = request.form.get('maint_cost', '')
     comment = tip = ''
     cdf_path = pdf_path = ''
+    cost_plot_path = ''
 
     if request.method == 'POST' and lifespan_input:
         try:
