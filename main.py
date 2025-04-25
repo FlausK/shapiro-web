@@ -127,6 +127,29 @@ def lifespan_page():
                 result += f"<br>→ Cost at {round(best_day, 2)} (best): {round(c_best, 2)}"
                 result += f"<br>→ Cost at {round(t_plus, 2)}: {round(c_plus, 2)}"
 
+                # --- コスト vs 交換タイミングのグラフ ---
+                t_range = np.linspace(max(1, eta * 0.3), eta * 3, 100)
+                failure_probs = weibull_min.cdf(t_range, beta, scale=eta)
+                fail_costs = failure_probs * fc
+                maint_costs = np.full_like(fail_costs, mc)
+                total_costs = fail_costs + maint_costs
+
+                cost_plot_path = os.path.join('static', 'cost_curve.png')
+                plt.figure(figsize=(6, 4))
+                plt.plot(t_range, fail_costs, label='Failure Cost', linestyle='--')
+                plt.plot(t_range, maint_costs, label='Maintenance Cost', linestyle=':')
+                plt.plot(t_range, total_costs, label='Total Cost', linewidth=2)
+                plt.axvline(best_day, color='gray', linestyle='-', alpha=0.5, label='Optimal Timing')
+                plt.xlabel("Replacement Timing")
+                plt.ylabel("Cost")
+                plt.title("Cost vs Replacement Timing")
+                plt.legend()
+                plt.grid(True)
+                plt.tight_layout()
+                plt.savefig(cost_plot_path)
+                plt.close()
+
+
             # グラフ作成（CDF & PDF）
             t_vals = np.linspace(0, max(failures) * 1.5, 200)
             cdf = weibull_min.cdf(t_vals, beta, scale=eta)
@@ -160,10 +183,12 @@ def lifespan_page():
             result = "⚠ Invalid data format. Please enter numerical values separated by commas or spaces."
 
     return render_template("lifespan.html", title="Lifespan Analysis", heading=None,
-                           lifespan_input=lifespan_input, failure_cost=failure_cost,
-                           maint_cost=maint_cost, result=result,
-                           comment=comment, tip=tip,
-                           cdf_path=cdf_path, pdf_path=pdf_path)
+                       lifespan_input=lifespan_input, failure_cost=failure_cost,
+                       maint_cost=maint_cost, result=result,
+                       comment=comment, tip=tip,
+                       cdf_path=cdf_path, pdf_path=pdf_path,
+                       cost_plot_path=cost_plot_path)
+
 
 
 # --- アプリ実行 ---

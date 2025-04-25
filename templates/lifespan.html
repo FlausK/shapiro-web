@@ -39,6 +39,11 @@
     {% endif %}
   {% endif %}
 
+  {% if cost_plot_path %}
+  <h5 class="mt-4">Cost Breakdown</h5>
+  <img src="{{ url_for('static', filename='cost_curve.png') }}" class="img-fluid" alt="Cost Curve">
+  {% endif %}
+
   <button type="submit" class="btn btn-primary mt-3">Analyze</button>
 </form>
 {% endblock %}
