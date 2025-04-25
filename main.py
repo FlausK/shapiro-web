@@ -93,6 +93,9 @@ def lifespan_page():
             avg_life = round(eta * gamma(1 + 1 / beta), 2)
             result = f"Weibull Estimation: β ≒ {beta}, η ≒ {eta}, Mean ≒ {avg_life}"
 
+            # 常に表示：点検アドバイス
+            tip = f"Recommended inspection start: around {round(avg_life * 0.75, 2)} units"
+
             # 故障傾向コメント
             if beta < 1:
                 comment = "Failure trend: Early failure (β < 1)"
@@ -101,19 +104,28 @@ def lifespan_page():
             else:
                 comment = "Failure trend: Wear-out failure (β > 1)"
 
-            # 点検アドバイス
-            tip = f"Recommended inspection start: around {round(avg_life * 0.75, 2)} units"
-
-            # 最適交換時期（コスト最小化）
+            # オプション：コスト最適化
             if failure_cost and maint_cost:
                 fc, mc = float(failure_cost), float(maint_cost)
                 min_cost, best_day = float('inf'), 0
+
                 for t in np.linspace(max(1, eta * 0.3), eta * 3, 100):
                     prob = weibull_min.cdf(t, beta, scale=eta)
                     cost = prob * fc + mc
                     if cost < min_cost:
                         min_cost, best_day = cost, t
-                result += f"<br>Optimal replacement timing: <b>{round(best_day, 2)}</b> units"
+
+                # コスト比較：前後 ±10% の点
+                t_minus = best_day * 0.9
+                t_plus = best_day * 1.1
+                c_minus = weibull_min.cdf(t_minus, beta, scale=eta) * fc + mc
+                c_best = weibull_min.cdf(best_day, beta, scale=eta) * fc + mc
+                c_plus = weibull_min.cdf(t_plus, beta, scale=eta) * fc + mc
+
+                result += f"<br><b>Optimal replacement timing:</b> {round(best_day, 2)} units"
+                result += f"<br>→ Cost at {round(t_minus, 2)}: {round(c_minus, 2)}"
+                result += f"<br>→ Cost at {round(best_day, 2)} (best): {round(c_best, 2)}"
+                result += f"<br>→ Cost at {round(t_plus, 2)}: {round(c_plus, 2)}"
 
             # グラフ作成（CDF & PDF）
             t_vals = np.linspace(0, max(failures) * 1.5, 200)
