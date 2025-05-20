@@ -7,50 +7,51 @@
   <div class="mb-3">
     <label for="purpose">Select your purpose:</label>
     <select id="purpose" name="purpose" class="form-select" onchange="toggleFields()">
-      <option value="cpk">Process Capability (Cpk)</option>
-      <option value="ttest">Before/After Comparison (t-test)</option>
-      <option value="reliability">Reliability Test</option>
-      <option value="proportion">Pass Rate / Proportion</option>
+      <option value="cpk" {% if form_data.purpose == 'cpk' %}selected{% endif %}>Process Capability (Cpk)</option>
+      <option value="ttest" {% if form_data.purpose == 'ttest' %}selected{% endif %}>Before/After Comparison (t-test)</option>
+      <option value="reliability" {% if form_data.purpose == 'reliability' %}selected{% endif %}>Reliability Test</option>
+      <option value="proportion" {% if form_data.purpose == 'proportion' %}selected{% endif %}>Pass Rate / Proportion</option>
     </select>
   </div>
 
   <!-- 共通: 有意水準 -->
   <div class="mb-3">
     <label>Significance Level (α):</label>
-    <input type="number" step="0.01" name="alpha" class="form-control" value="0.05">
+    <input type="number" step="0.01" name="alpha" class="form-control" value="{{ form_data.alpha }}">
   </div>
 
   <!-- Cpk用 -->
   <div id="cpk_fields" class="mb-3">
     <label>Target Cpk:</label>
-    <input type="number" step="0.01" name="cpk_target" class="form-control" value="1.33">
+    <input type="number" step="0.01" name="cpk_target" class="form-control" value="{{ form_data.cpk_target }}">
   </div>
 
   <!-- t検定用 -->
   <div id="ttest_fields" class="mb-3" style="display:none">
     <label>Effect Size (d):</label>
-    <input type="number" step="0.01" name="effect_size" class="form-control" value="0.5">
+    <input type="number" step="0.01" name="effect_size" class="form-control" value="{{ form_data.effect_size }}">
     <label class="mt-2">Power (1 - β):</label>
-    <input type="number" step="0.01" name="power" class="form-control" value="0.8">
+    <input type="number" step="0.01" name="power" class="form-control" value="{{ form_data.power }}">
   </div>
 
   <!-- 信頼性試験用 -->
   <div id="reliability_fields" class="mb-3" style="display:none">
     <label>Confidence Level:</label>
-    <input type="number" step="0.01" name="confidence" class="form-control" value="0.95">
+    <input type="number" step="0.01" name="confidence" class="form-control" value="{{ form_data.confidence }}">
     <label class="mt-2">Allowed Failure Rate:</label>
-    <input type="number" step="0.01" name="failure_rate" class="form-control" value="0.1">
+    <input type="number" step="0.01" name="failure_rate" class="form-control" value="{{ form_data.failure_rate }}">
   </div>
 
   <!-- 比率検定 -->
   <div id="proportion_fields" class="mb-3" style="display:none">
     <label>Expected Proportion (e.g., 0.95):</label>
-    <input type="number" step="0.01" name="expected_prop" class="form-control" value="0.95">
+    <input type="number" step="0.01" name="expected_prop" class="form-control" value="{{ form_data.expected_prop }}">
     <label class="mt-2">Margin of Error:</label>
-    <input type="number" step="0.01" name="margin" class="form-control" value="0.05">
+    <input type="number" step="0.01" name="margin" class="form-control" value="{{ form_data.margin }}">
   </div>
 
   <button type="submit" class="btn btn-primary mt-3">Calculate</button>
+  <button type="reset" class="btn btn-outline-secondary mt-3 ms-2">Reset</button>
 </form>
 
 {% if result %}
@@ -58,6 +59,12 @@
     <strong>Required Sample Size:</strong> {{ result }}
   </div>
 {% endif %}
+
+<style>
+  select:invalid, input:placeholder-shown {
+    color: #888;
+  }
+</style>
 
 <script>
 function toggleFields() {
