@@ -24,6 +24,8 @@ def index():
     return render_template("index.html", title="Statistical Toolkit", heading="Welcome to the Statistical Toolkit")
 
 
+
+
 # --- Shapiro-Wilk 正規性検定 ---
 @app.route('/shapiro', methods=['GET', 'POST'])
 def shapiro_page():
@@ -81,6 +83,8 @@ def shapiro_page():
 
 
 
+
+
 # --- Weibull 寿命分析 ---
 @app.route('/lifespan', methods=['GET', 'POST'])
 def lifespan_page():
@@ -101,7 +105,10 @@ def lifespan_page():
             result = f"Weibull Estimation: β ≈ {beta}, η ≈ {eta}, Mean ≈ {avg_life}"
 
             # Preventive timing advice
-            tip = f"Recommended inspection start: around {round(avg_life * 0.75, 2)} units"
+            # tip = f"Recommended inspection start: around {round(avg_life * 0.75, 2)} units"
+            tip_time = weibull_min.ppf(0.3, beta, scale=eta)
+            tip = f"Recommended inspection start: around {round(tip_time, 2)} units (CDF=30%)"
+
 
             # Generate CDF and PDF graphs
             os.makedirs('static', exist_ok=True)
@@ -178,37 +185,57 @@ def lifespan_page():
                            cost_plot_path=cost_plot_path)
 
 
+
+
+
 # --- サンプルサイズ計算 ---
 @app.route('/samplesize', methods=['GET', 'POST'])
 def sample_size_page():
     result = ''
+    form_data = {
+        'purpose': 'cpk',
+        'alpha': '0.05',
+        'cpk_target': '1.33',
+        'effect_size': '0.5',
+        'power': '0.8',
+        'confidence': '0.95',
+        'failure_rate': '0.1',
+        'expected_prop': '0.95',
+        'margin': '0.05'
+    }
+
     if request.method == 'POST':
+        form_data.update(request.form)
         purpose = request.form.get('purpose')
         alpha = float(request.form.get('alpha', 0.05))
 
-        if purpose == 'cpk':
-            cpk_target = float(request.form.get('cpk_target', 1.33))
-            z = norm.ppf(1 - alpha / 2)
-            result = ceil((z / (cpk_target / 3))**2)
+        try:
+            if purpose == 'cpk':
+                cpk_target = float(request.form.get('cpk_target', 1.33))
+                z = norm.ppf(1 - alpha / 2)
+                result = ceil((z / (cpk_target / 3))**2)
 
-        elif purpose == 'ttest':
-            effect_size = float(request.form.get('effect_size', 0.5))
-            power = float(request.form.get('power', 0.8))
-            analysis = TTestIndPower()
-            result = ceil(analysis.solve_power(effect_size=effect_size, alpha=alpha, power=power, alternative='two-sided'))
+            elif purpose == 'ttest':
+                effect_size = float(request.form.get('effect_size', 0.5))
+                power = float(request.form.get('power', 0.8))
+                analysis = TTestIndPower()
+                result = ceil(analysis.solve_power(effect_size=effect_size, alpha=alpha, power=power, alternative='two-sided'))
 
-        elif purpose == 'reliability':
-            confidence = float(request.form.get('confidence', 0.95))
-            failure_rate = float(request.form.get('failure_rate', 0.1))
-            result = ceil(log(1 - confidence) / log(1 - (1 - failure_rate)))
+            elif purpose == 'reliability':
+                confidence = float(request.form.get('confidence', 0.95))
+                failure_rate = float(request.form.get('failure_rate', 0.1))
+                result = ceil(log(1 - confidence) / log(1 - (1 - failure_rate)))
 
-        elif purpose == 'proportion':
-            p = float(request.form.get('expected_prop', 0.95))
-            margin = float(request.form.get('margin', 0.05))
-            z = norm.ppf(1 - alpha / 2)
-            result = ceil((z**2 * p * (1 - p)) / (margin**2))
+            elif purpose == 'proportion':
+                p = float(request.form.get('expected_prop', 0.95))
+                margin = float(request.form.get('margin', 0.05))
+                z = norm.ppf(1 - alpha / 2)
+                result = ceil((z**2 * p * (1 - p)) / (margin**2))
+        except:
+            result = "Invalid input."
 
-    return render_template("samplesize.html", title="Sample Size Calculator", result=result)
+    return render_template("samplesize.html", title="Sample Size Calculator", result=result, form_data=form_data)
+
 
 
 
