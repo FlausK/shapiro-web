@@ -17,28 +17,29 @@
     </div>
   </div>
 
-  {% if result %}
-    <div class="alert alert-info">{{ result|safe }}</div>
-    {% if comment %}
-      <p><b>{{ comment }}</b></p>
-    {% endif %}
-    {% if tip %}
-      <p class="text-muted">{{ tip }}</p>
-    {% endif %}
+{% if result %}
+  <div class="alert alert-info">{{ result|safe }}</div>
+  {% if comment %}
+    <p><b>{{ comment }}</b></p>
+  {% endif %}
+  {% if tip %}
+    <p class="text-muted">{{ tip }}</p>
+  {% endif %}
+  <div class="row mt-4">
     {% if cdf_path %}
-      <div class="row mt-4">
-        <div class="col-md-6">
-          <h5>📈 CDF</h5>
-          <img src="{{ url_for('static', filename='weibull_cdf.png') }}" class="img-fluid rounded">
-        </div>
+      <div class="col-md-6">
+        <h5>📈 CDF</h5>
+        <img src="{{ url_for('static', filename='weibull_cdf.png') }}" class="img-fluid rounded">
       </div>
     {% endif %}
-  {% endif %}
-
-  {% if cost_plot_path %}
-  <h5 class="mt-4">Cost Breakdown</h5>
-  <img src="{{ url_for('static', filename='cost_curve.png') }}" class="img-fluid" alt="Cost Curve">
-  {% endif %}
+    {% if cost_plot_path %}
+      <div class="col-md-6">
+        <h5>Cost Breakdown</h5>
+        <img src="{{ url_for('static', filename='cost_curve.png') }}" class="img-fluid" alt="Cost Curve">
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
 
   <button type="submit" class="btn btn-primary mt-3">Analyze</button>
 </form>
