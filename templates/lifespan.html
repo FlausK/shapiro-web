@@ -25,15 +25,11 @@
     {% if tip %}
       <p class="text-muted">{{ tip }}</p>
     {% endif %}
-    {% if cdf_path and pdf_path %}
+    {% if cdf_path %}
       <div class="row mt-4">
         <div class="col-md-6">
           <h5>📈 CDF</h5>
           <img src="{{ url_for('static', filename='weibull_cdf.png') }}" class="img-fluid rounded">
-        </div>
-        <div class="col-md-6">
-          <h5>📉 PDF</h5>
-          <img src="{{ url_for('static', filename='weibull_pdf.png') }}" class="img-fluid rounded">
         </div>
       </div>
     {% endif %}

@@ -181,8 +181,7 @@ def lifespan_page():
                            lifespan_input=lifespan_input, failure_cost=failure_cost,
                            maint_cost=maint_cost, result=result,
                            tip=tip if 'tip' in locals() else '',
-                           cdf_path=cdf_path, pdf_path=pdf_path,
-                           cost_plot_path=cost_plot_path)
+                           cdf_path=cdf_path, cost_plot_path=cost_plot_path)
 
 
 
