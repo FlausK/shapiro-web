@@ -94,7 +94,7 @@ def lifespan_page():
     maint_cost = request.form.get('maint_cost', '')
     cost_plot_path = ''
     cdf_path = ''
-    pdf_path = ''
+    # pdf_path = ''
 
     if request.method == 'POST' and lifespan_input:
         try:
@@ -114,10 +114,10 @@ def lifespan_page():
             os.makedirs('static', exist_ok=True)
             t_vals = np.linspace(0, max(failures) * 1.5, 200)
             cdf = weibull_min.cdf(t_vals, beta, scale=eta)
-            pdf = weibull_min.pdf(t_vals, beta, scale=eta)
+            # pdf = weibull_min.pdf(t_vals, beta, scale=eta)
 
             cdf_path = os.path.join('static', 'weibull_cdf.png')
-            pdf_path = os.path.join('static', 'weibull_pdf.png')
+            # pdf_path = os.path.join('static', 'weibull_pdf.png')
 
             plt.figure(figsize=(6, 4))
             plt.plot(t_vals, cdf)
@@ -129,15 +129,15 @@ def lifespan_page():
             plt.savefig(cdf_path)
             plt.close()
 
-            plt.figure(figsize=(6, 4))
-            plt.plot(t_vals, pdf)
-            plt.title("Weibull PDF")
-            plt.xlabel("Time")
-            plt.ylabel("Density")
-            plt.grid(True)
-            plt.tight_layout()
-            plt.savefig(pdf_path)
-            plt.close()
+            # plt.figure(figsize=(6, 4))
+            # plt.plot(t_vals, pdf)
+            # plt.title("Weibull PDF")
+            # plt.xlabel("Time")
+            # plt.ylabel("Density")
+            # plt.grid(True)
+            # plt.tight_layout()
+            # plt.savefig(pdf_path)
+            # plt.close()
 
             # Cost model only when both costs are provided
             if failure_cost and maint_cost:
